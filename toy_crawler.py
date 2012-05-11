@@ -169,16 +169,19 @@ def downloadImage(img_url):
     except Exception as e:
         print 'EXCEPTION while downloading: %s' % e
 
-def getImages(top_level_url):
+def getImages(top_level_url, nodelay):
     print '\nTop level URL: %s\n' % top_level_url
     page = Fetcher(top_level_url)
     page.fetch()
     print '\nFetching images from all the pages below:\n'
     for i, url in enumerate(page):
         print "%d. %s" % (i, url)
-        wait_mins = random.randint(0, 5)
-        print "Wait for %d mins." % wait_mins
-        time.sleep(wait_mins * 60)
+
+        if not nodelay:
+            wait_mins = random.randint(0, 5)
+            print "Wait for %d mins." % wait_mins
+            time.sleep(wait_mins * 60)
+
         img_urls = filterImageUrlsInPage(url)
         for img_url in img_urls:
             downloadImage(img_url)
@@ -204,6 +207,10 @@ def parse_options():
                       action="store_true", default=False, dest="images",
                       help="Get images for specified url only")
 
+    parser.add_option("-n", "--nodelay",
+                      action="store_true", default=False, dest="nodelay",
+                      help="Get images without interim waits.")
+
     parser.add_option("-d", "--depth",
                       action="store", type="int", default=30, dest="depth",
                       help="Maximum depth to traverse")
@@ -226,7 +233,7 @@ def main():
         raise SystemExit, 0
 
     if opts.images:
-        getImages(url)
+        getImages(url, opts.nodelay)
         raise SystemExit, 0
 
     depth = opts.depth
